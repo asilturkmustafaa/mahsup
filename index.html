@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1d6b58">
+<script>
+/* ==== FIREBASE AYARI (KURULUM.md 2. adım) — null yerine kendi ayarınızı yapıştırın ==== */
+window.FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCGFmO_2wj3qEnwsTR19kJa-52DwK5oJxc",
+  authDomain: "mahsup-6825a.firebaseapp.com",
+  projectId: "mahsup-6825a",
+  storageBucket: "mahsup-6825a.firebasestorage.app",
+  messagingSenderId: "515225412867",
+  appId: "1:515225412867:web:7c6d032d0a0add48f57536"
+};
+</script>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Mahsup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: telefon genişliğinde tek sütun; her ekran bir iş yapar, ana eylem her zaman büyük düğme */
+:root{
+  color-scheme:light;
+  --bg:#f4f6f5; --surface:#ffffff; --track:#e6ece9; --fg:#16201c; --muted:#5f6d67; --line:#dce3df;
+  --accent:#1d6b58; --accent-ink:#ffffff; --soft:#e3efea;
+  --credit:#1f7a45; --debit:#b23a2e; --warn:#8a5f00; --warn-soft:#fbf0d6;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-num:var(--f-body);
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--fg);font-family:var(--f-body);font-size:17px;line-height:1.45;margin:0;font-variant-numeric:tabular-nums;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 48px}
+#app{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus,select:focus{outline:2px solid var(--accent);outline-offset:2px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:56px;border-radius:14px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:17px;padding:0 18px}
+.btn.outline{background:var(--surface);color:var(--accent);border:1.5px solid var(--accent)}
+.btn.quiet{background:var(--surface);color:var(--fg);border:1px solid var(--line);min-height:50px;font-size:16px}
+.btn.danger{background:var(--surface);color:var(--debit);border:1px solid var(--line);min-height:50px;font-size:16px}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.link{border:0;background:none;color:var(--accent);font-weight:600;padding:8px 0;text-decoration:underline;text-underline-offset:3px}
+input{font:inherit;font-size:17px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);width:100%;min-width:0}
+input.amt{font-weight:700;font-size:30px;padding:14px 16px}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.card.soft{background:var(--soft);border-color:transparent}
+.card.warn{background:var(--warn-soft);border-color:transparent}
+h2{font-size:17px;color:var(--fg);margin:0;font-weight:700;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+h2 b{color:var(--muted);font-size:16px;font-weight:600}
+.top{display:flex;align-items:center;gap:8px;min-height:48px}
+.top .title{flex:1;min-width:0;font-size:19px;font-weight:700;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top .side{min-width:84px;display:flex}
+.top .side.r{justify-content:flex-end}
+.back{border:0;background:none;color:var(--accent);font-weight:600;font-size:16px;padding:10px 2px}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:28px 0 8px}
+.logo{width:64px;height:64px;border-radius:18px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:700 34px var(--f-body)}
+.hero h1{margin:0;font-size:30px;letter-spacing:-.01em}
+.hero p{margin:0;color:var(--muted);max-width:34ch;text-wrap:balance}
+.or{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:14px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.note{font-size:14px;color:var(--muted);text-align:center}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--track);border-radius:12px;padding:4px;gap:4px}
+.tabs button{border:0;background:transparent;border-radius:9px;min-height:44px;font-weight:600;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(22,32,28,.12)}
+.gcard{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;min-height:72px}
+.gcard .t{flex:1;min-width:0}
+.gcard .n{display:block;font-size:18px;font-weight:700;overflow-wrap:anywhere}
+.gcard .s{display:block;font-size:14px;color:var(--muted)}
+.gcard .chev{color:var(--muted);font-size:22px}
+.pill{font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--soft);color:var(--accent);white-space:nowrap}
+.pill.wait{background:var(--warn-soft);color:var(--warn)}
+.pill.mute{background:var(--track);color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:10px 16px;font-size:16px;min-height:44px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip.ghost{border-style:dashed;color:var(--muted);font-size:14px}
+.hint{font-size:14px;color:var(--muted)}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+.month{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.month span{font-weight:700;font-size:18px}
+.icon{width:48px;height:48px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:22px}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.list>li{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.list>li:last-child{border-bottom:0}
+.list .t{flex:1;min-width:0;overflow-wrap:anywhere}
+.list .sub{display:block;font-size:13px;color:var(--muted)}
+.pos{color:var(--credit)}.neg{color:var(--debit)}
+.bal{font-weight:700;font-size:18px}
+.tr{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);border-radius:12px;padding:14px;font-size:17px}
+.tr .w{min-width:0;overflow-wrap:anywhere}
+.tr .ar{color:var(--muted);padding:0 6px}
+.mini{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600;min-height:40px;white-space:nowrap}
+.mini.ok{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.mini[data-armed]{color:var(--debit);border-color:var(--debit)}
+.code{font-size:28px;font-weight:700;letter-spacing:.06em;text-align:center;background:var(--soft);color:var(--accent);border-radius:12px;padding:14px;user-select:all;overflow-wrap:anywhere}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:16px}
+.switch input{width:24px;height:24px;flex:none;accent-color:var(--accent)}
+.empty{color:var(--muted);text-align:center;padding:8px 0}
+textarea#fb{width:100%;min-height:140px;font:15px var(--f-body);border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--surface);color:var(--fg)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--surface);padding:12px 18px;border-radius:12px;font-size:15px;max-width:calc(100% - 32px);z-index:30;text-align:center}
+.spin{width:28px;height:28px;border:3px solid var(--track);border-top-color:var(--accent);border-radius:50%;animation:sp 1s linear infinite;margin:60px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+</style>
+</head>
+<body>
+
+
+<main id="app"><div class="spin" role="status" aria-label="Yükleniyor"></div></main>
+<div id="fbWrap" style="max-width:560px;margin:12px auto 0" hidden><textarea id="fb" readonly aria-label="Kopyalanacak metin"></textarea></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const app=$('#app');
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const AYLAR=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const pad=n=>String(n).padStart(2,'0');
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());};
+const fmt=k=>(k/100).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₺';
+const sfmt=k=>(k>0?'+':k<0?'−':'')+fmt(Math.abs(k));
+const cmp=(a,b)=>a.localeCompare(b,'tr');
+const TYPES={ofis:'Ofis',etkinlik:'Etkinlik',ev:'Ev',diger:'Diğer'};
+const ALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const newCode=()=>Array.from(crypto.getRandomValues(new Uint32Array(10)),n=>ALPH[n%ALPH.length]).join('');
+const showCode=c=>String(c||'').replace(/^(.{4})(.{3})(.{3})$/,'$1-$2-$3');
+const normCode=c=>String(c||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const monthName=m=>{const [y,mo]=m.split('-');return AYLAR[+mo-1]+' '+y;};
+function parseAmount(v){
+  let s=String(v).replace(/[\s₺]|TL/gi,'');if(!s)return NaN;
+  if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');
+  else if((s.match(/\./g)||[]).length>1||/^\d{1,3}\.\d{3}$/.test(s))s=s.replace(/\./g,'');
+  const n=Number(s);return isFinite(n)?Math.round(n*100):NaN;
+}
+let params;try{params=new URLSearchParams(location.search)}catch(e){params=new URLSearchParams()}
+
+const S={view:'loading',user:null,groups:[],gid:null,g:null,members:[],expenses:[],tab:'giderler',
+  month:today().slice(0,7),draft:null,newG:null,joinCode:normCode(params.get('kod')),demo:false,err:''};
+let B=null,unMy=null,unG=null,deferred=false;
+
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,3200);}
+function fail(e){
+  const c=e&&e.code;
+  if(c==='permission-denied')return toast('Bu işlem için yetkiniz yok.');
+  if(c==='no-code')return toast('Bu kodla bir grup bulunamadı. Kodu kontrol edin.');
+  toast(AUTH_ERR[c]||'İşlem tamamlanamadı. Bağlantınızı kontrol edip tekrar deneyin.');
+}
+const AUTH_ERR={'auth/invalid-email':'E-posta adresi geçersiz.','auth/weak-password':'Şifre en az 6 karakter olmalı.',
+  'auth/missing-password':'Şifrenizi yazın.','wrong-password':'Bu e-posta kayıtlı ama şifre hatalı. "Şifremi unuttum" ile sıfırlayabilirsiniz.',
+  'auth/popup-closed-by-user':'Giriş penceresi kapatıldı.','auth/cancelled-popup-request':'Giriş penceresi kapatıldı.',
+  'auth/unauthorized-domain':'Bu adres Firebase\'de yetkili değil (KURULUM.md, 6. adım).',
+  'auth/operation-not-allowed':'Bu giriş yöntemi Firebase\'de açılmamış (KURULUM.md, 3. adım).',
+  'auth/too-many-requests':'Çok fazla deneme yapıldı. Biraz sonra tekrar deneyin.','auth/network-request-failed':'İnternet bağlantısı yok.'};
+function copy(txt,ok){
+  const p=navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(txt):Promise.reject();
+  p.then(()=>{$('#fbWrap').hidden=true;toast(ok);},()=>{const f=$('#fb');f.value=txt;$('#fbWrap').hidden=false;f.focus();f.select();toast('Metni seçtim, kopyalayabilirsiniz.');});
+}
+function armed(btn,label,fn){
+  if(!btn.hasAttribute('data-armed')){const o=btn.textContent;btn.setAttribute('data-armed','');btn.textContent=label;
+    setTimeout(()=>{if(btn.isConnected){btn.removeAttribute('data-armed');btn.textContent=o;}},4000);return;}
+  Promise.resolve().then(fn).catch(fail);
+}
+
+/* ================= Firebase arka ucu ================= */
+async function firebaseBackend(cfg){
+  const base='https://www.gstatic.com/firebasejs/10.12.2/';
+  const [A,Au,F]=await Promise.all([import(base+'firebase-app.js'),import(base+'firebase-auth.js'),import(base+'firebase-firestore.js')]);
+  const fa=A.initializeApp(cfg),auth=Au.getAuth(fa),db=F.getFirestore(fa);auth.languageCode='tr';
+  const users=uid=>F.doc(db,'users',uid);
+  return {
+    onAuth(cb){Au.getRedirectResult(auth).catch(fail);Au.onAuthStateChanged(auth,u=>cb(u?{uid:u.uid,name:u.displayName||'',email:u.email||''}:null));},
+    google(){const p=new Au.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
+      return Au.signInWithPopup(auth,p).catch(e=>{if(e.code==='auth/popup-blocked'||e.code==='auth/operation-not-supported-in-this-environment')return Au.signInWithRedirect(auth,p);throw e;});},
+    async email(email,pw){
+      try{await Au.signInWithEmailAndPassword(auth,email,pw);}
+      catch(e){
+        if(!['auth/invalid-credential','auth/user-not-found','auth/invalid-login-credentials','auth/wrong-password'].includes(e.code))throw e;
+        try{await Au.createUserWithEmailAndPassword(auth,email,pw);}
+        catch(e2){if(e2.code==='auth/email-already-in-use')throw{code:'wrong-password'};throw e2;}
+      }
+    },
+    reset:email=>Au.sendPasswordResetEmail(auth,email),
+    signOut:()=>Au.signOut(auth),
+    watchMyGroups(uid,cb){
+      const subs={},info={};let map={};
+      const emit=()=>cb(Object.keys(map).map(gid=>Object.assign({id:gid},map[gid],info[gid]||{status:'loading'})).filter(g=>g.status!=='gone'));
+      const u=F.onSnapshot(users(uid),s=>{
+        map=(s.exists()&&s.data().groups)||{};
+        Object.keys(map).forEach(gid=>{if(subs[gid])return;
+          subs[gid]=F.onSnapshot(F.doc(db,'groups',gid,'members',uid),
+            m=>{info[gid]=m.exists()?{status:m.data().status,role:m.data().role}:{status:'gone'};emit();},
+            ()=>{info[gid]={status:'gone'};emit();});});
+        Object.keys(subs).forEach(gid=>{if(!map[gid]){subs[gid]();delete subs[gid];}});
+        emit();
+      },()=>cb([]));
+      return()=>{u();Object.values(subs).forEach(f=>f());};
+    },
+    async createGroup(user,{name,type,myName,approval}){
+      for(let i=0;i<3;i++){
+        const g=F.doc(F.collection(db,'groups')),code=newCode(),b=F.writeBatch(db);
+        b.set(g,{name,type,code,adminUid:user.uid,approval:!!approval,createdAt:F.serverTimestamp()});
+        b.set(F.doc(db,'groups',g.id,'members',user.uid),{uid:user.uid,name:myName,email:user.email||'',role:'admin',status:'active',joinedAt:F.serverTimestamp()});
+        b.set(F.doc(db,'codes',code),{gid:g.id,name,type,approval:!!approval,adminUid:user.uid});
+        b.set(users(user.uid),{groups:{[g.id]:{name,type}}},{merge:true});
+        try{await b.commit();return g.id;}catch(e){if(e.code!=='permission-denied'||i===2)throw e;}
+      }
+    },
+    async joinByCode(user,code,myName){
+      const c=await F.getDoc(F.doc(db,'codes',code));if(!c.exists())throw{code:'no-code'};
+      const {gid,name,type,approval}=c.data();const mref=F.doc(db,'groups',gid,'members',user.uid);
+      const ex=await F.getDoc(mref);let status;
+      if(ex.exists())status=ex.data().status;
+      else{status=approval?'pending':'active';
+        await F.setDoc(mref,{uid:user.uid,name:myName,email:user.email||'',role:'member',status,code,groupName:name,joinedAt:F.serverTimestamp()});}
+      await F.setDoc(users(user.uid),{groups:{[gid]:{name,type}}},{merge:true});
+      return{gid,status};
+    },
+    watchGroup(gid,cb,err){
+      const st={group:null,members:[],expenses:[]},fire=()=>cb(st);
+      const us=[F.onSnapshot(F.doc(db,'groups',gid),s=>{st.group=s.exists()?s.data():null;fire();},err),
+        F.onSnapshot(F.collection(db,'groups',gid,'members'),q=>{st.members=q.docs.map(d=>Object.assign({id:d.id},d.data()));fire();},err),
+        F.onSnapshot(F.collection(db,'groups',gid,'expenses'),q=>{st.expenses=q.docs.map(d=>Object.assign({id:d.id},d.data()));fire();},err)];
+      return()=>us.forEach(f=>f());
+    },
+    addExpense:(gid,e)=>F.addDoc(F.collection(db,'groups',gid,'expenses'),e),
+    delExpense:(gid,id)=>F.deleteDoc(F.doc(db,'groups',gid,'expenses',id)),
+    updateMember:(gid,mid,p)=>F.updateDoc(F.doc(db,'groups',gid,'members',mid),p),
+    removeMember:(gid,mid)=>F.deleteDoc(F.doc(db,'groups',gid,'members',mid)),
+    addGuest:(gid,name)=>F.addDoc(F.collection(db,'groups',gid,'members'),{uid:null,name,role:'member',status:'active',guest:true,joinedAt:F.serverTimestamp()}),
+    async updateGroup(uid,gid,code,p){
+      await F.updateDoc(F.doc(db,'groups',gid),p);
+      const cp={};if('name' in p)cp.name=p.name;if('approval' in p)cp.approval=p.approval;
+      if(Object.keys(cp).length)await F.updateDoc(F.doc(db,'codes',code),cp);
+      if('name' in p)await F.setDoc(users(uid),{groups:{[gid]:{name:p.name}}},{merge:true});
+    },
+    async leave(uid,gid){
+      await F.deleteDoc(F.doc(db,'groups',gid,'members',uid)).catch(()=>{});
+      await F.updateDoc(users(uid),{['groups.'+gid]:F.deleteField()});
+    }
+  };
+}
+
+/* ================= Önizleme (yerel) arka ucu ================= */
+function localBackend(){
+  const K='mahsup-demo';let D=null;try{D=JSON.parse(localStorage.getItem(K))}catch(e){}
+  D=D||{user:null,groups:{},codes:{},my:{}};
+  const L=new Set(),save=()=>{try{localStorage.setItem(K,JSON.stringify(D))}catch(e){}L.forEach(f=>f());};
+  const sub=f=>{L.add(f);f();return()=>L.delete(f);};
+  const rid=()=>Math.random().toString(36).slice(2,10);let authCb=()=>{};
+  const login=u=>{D.user=u;save();authCb(u);};
+  return{demo:true,
+    onAuth(cb){authCb=cb;setTimeout(()=>cb(D.user),0);},
+    google:async()=>login({uid:'u_'+rid(),name:'Deneme Kullanıcısı',email:''}),
+    email:async e=>login({uid:'u_'+rid(),name:e.split('@')[0],email:e}),
+    reset:async()=>{},
+    signOut:async()=>login(null),
+    watchMyGroups(uid,cb){return sub(()=>cb(Object.keys(D.my).filter(g=>D.groups[g]&&D.groups[g].members[uid])
+      .map(g=>({id:g,name:D.groups[g].name,type:D.groups[g].type,status:D.groups[g].members[uid].status,role:D.groups[g].members[uid].role}))));},
+    async createGroup(u,{name,type,myName,approval}){const gid='g'+rid(),code=newCode();
+      D.groups[gid]={name,type,code,adminUid:u.uid,approval:!!approval,members:{[u.uid]:{uid:u.uid,name:myName,email:u.email,role:'admin',status:'active'}},expenses:{}};
+      D.codes[code]=gid;D.my[gid]=1;save();return gid;},
+    async joinByCode(u,code,myName){const gid=D.codes[code];if(!gid)throw{code:'no-code'};const g=D.groups[gid];
+      if(!g.members[u.uid])g.members[u.uid]={uid:u.uid,name:myName,role:'member',status:g.approval?'pending':'active'};
+      D.my[gid]=1;save();return{gid,status:g.members[u.uid].status};},
+    watchGroup(gid,cb){return sub(()=>{const g=D.groups[gid];if(!g)return cb({group:null,members:[],expenses:[]});
+      cb({group:g,members:Object.entries(g.members).map(([k,v])=>Object.assign({id:k},v)),expenses:Object.entries(g.expenses).map(([k,v])=>Object.assign({id:k},v))});});},
+    addExpense:async(gid,e)=>{D.groups[gid].expenses['e'+rid()]=e;save();},
+    delExpense:async(gid,id)=>{delete D.groups[gid].expenses[id];save();},
+    updateMember:async(gid,mid,p)=>{Object.assign(D.groups[gid].members[mid],p);save();},
+    removeMember:async(gid,mid)=>{delete D.groups[gid].members[mid];save();},
+    addGuest:async(gid,name)=>{D.groups[gid].members['m'+rid()]={uid:null,name,role:'member',status:'active',guest:true};save();},
+    updateGroup:async(uid,gid,code,p)=>{Object.assign(D.groups[gid],p);save();},
+    leave:async(uid,gid)=>{delete D.groups[gid].members[uid];delete D.my[gid];save();}
+  };
+}
+
+/* ================= Hesap ================= */
+const active=()=>S.members.filter(m=>m.status==='active').sort((a,b)=>cmp(a.name||'',b.name||''));
+const me=()=>S.user&&S.members.find(m=>m.id===S.user.uid);
+const isAdmin=()=>{const m=me();return!!(m&&m.role==='admin');};
+const nameOf=id=>{const m=S.members.find(x=>x.id===id);return m?m.name:'Ayrılan üye';};
+const monthList=()=>S.expenses.filter(e=>e.month===S.month).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.createdAt||0)-(a.createdAt||0));
+function compute(list){
+  const ids=new Set(active().map(m=>m.id));list.forEach(e=>{ids.add(e.payer);(e.participants||[]).forEach(p=>ids.add(p));});
+  const paid={},share={};ids.forEach(i=>{paid[i]=0;share[i]=0;});
+  list.forEach(e=>{const ps=[...(e.participants||[])].sort();const n=ps.length;if(!n)return;
+    paid[e.payer]+=e.amount;const base=Math.floor(e.amount/n);let rem=e.amount-base*n;
+    ps.forEach(p=>{share[p]+=base+(rem>0?1:0);if(rem>0)rem--;});});
+  const rows=[...ids].map(i=>({id:i,name:nameOf(i),paid:paid[i],share:share[i],net:paid[i]-share[i]}))
+    .filter(r=>r.paid||r.share||active().some(m=>m.id===r.id)).sort((a,b)=>cmp(a.name,b.name));
+  const cr=rows.filter(r=>r.net>0).map(r=>({n:r.name,v:r.net})).sort((a,b)=>b.v-a.v);
+  const db=rows.filter(r=>r.net<0).map(r=>({n:r.name,v:-r.net})).sort((a,b)=>b.v-a.v);
+  const tr=[];let i=0,j=0;
+  while(i<db.length&&j<cr.length){const x=Math.min(db[i].v,cr[j].v);if(x>0)tr.push({from:db[i].n,to:cr[j].n,v:x});
+    db[i].v-=x;cr[j].v-=x;if(!db[i].v)i++;if(!cr[j].v)j++;}
+  return{rows,tr,total:list.reduce((s,e)=>s+e.amount,0)};
+}
+
+/* ================= Ekranlar ================= */
+const top=(left,title,right)=>`<div class="top"><div class="side">${left||''}</div><div class="title">${esc(title)}</div><div class="side r">${right||''}</div></div>`;
+const back=(act,label)=>`<button class="back" data-act="${act}">‹ ${label}</button>`;
+
+function vLogin(){
+  return `<div class="hero"><div class="logo" aria-hidden="true">₺</div><h1>Mahsup</h1>
+    <p>Ortak giderleri yazın; ay sonunda kimin kime ne ödeyeceğini tek ekranda görün.</p></div>
+  ${S.joinCode?`<div class="card soft"><b>Bir gruba davet edildiniz.</b><span class="hint">Giriş yapınca <span class="num">${esc(showCode(S.joinCode))}</span> kodlu gruba katılacaksınız.</span></div>`:''}
+  <button class="btn" data-act="google">Google ile giriş yap</button>
+  <div class="or">veya e-posta ile</div>
+  <form id="emailForm" class="stack" novalidate>
+    <input id="em" type="email" placeholder="E-posta adresiniz" autocomplete="email" inputmode="email">
+    <input id="pw" type="password" placeholder="Şifre (en az 6 karakter)" autocomplete="current-password">
+    <button class="btn outline" type="submit">Giriş yap / Kayıt ol</button>
+    <button class="link" type="button" data-act="reset">Şifremi unuttum</button>
+  </form>
+  ${S.demo?'<p class="note">Önizleme modu: kayıtlar yalnızca bu cihazda tutulur.</p>':''}`;
+}
+function vHome(){
+  const gs=S.groups.slice().sort((a,b)=>cmp(a.name||'',b.name||''));
+  return top('',`Mahsup`,`<button class="back" data-act="logout">Çıkış</button>`)+
+  `<p class="hint" style="margin:-8px 0 0;text-align:center">${esc(S.user.name||S.user.email||'')}${S.demo?' · önizleme modu':''}</p>
+  <h2>Gruplarım</h2>
+  ${gs.length?`<div class="stack">${gs.map(g=>`<button class="gcard" data-open="${esc(g.id)}">
+      <span class="t"><span class="n">${esc(g.name)}</span><span class="s">${esc(TYPES[g.type]||'Grup')}</span></span>
+      ${g.status==='pending'?'<span class="pill wait">Onay bekliyor</span>':g.role==='admin'?'<span class="pill">Yönetici</span>':''}
+      <span class="chev" aria-hidden="true">›</span></button>`).join('')}</div>`
+  :`<div class="card"><p class="empty" style="margin:0">Henüz bir grubunuz yok. Ofisiniz ya da etkinliğiniz için grup kurun veya size gönderilen kodla katılın.</p></div>`}
+  <button class="btn" data-act="toCreate">+ Yeni grup kur</button>
+  <button class="btn outline" data-act="toJoin">Kodla gruba katıl</button>`;
+}
+function vCreate(){
+  const n=S.newG;
+  return top(back('home','Geri'),'Yeni grup','')+
+  `<form id="createForm" class="stack" novalidate>
+    <label class="f">Grup adı<input id="gName" maxlength="60" placeholder="örn. Asiltürk Hukuk Ofisi" value="${esc(n.name)}" autocomplete="off"></label>
+    <div class="stack" style="gap:6px"><span class="hint" style="font-weight:600">Tür</span>
+      <div class="chips">${Object.entries(TYPES).map(([k,v])=>`<button type="button" class="chip" data-type="${k}" aria-pressed="${n.type===k}">${v}</button>`).join('')}</div></div>
+    <label class="f">Gruptaki adınız<input id="myName" maxlength="40" value="${esc(n.myName)}" autocomplete="name"></label>
+    <label class="switch card"><span>Katılımlar yönetici onayıyla olsun<span class="hint" style="display:block">Kapalıysa kodu bilen herkes doğrudan katılır.</span></span><input type="checkbox" id="gAppr"${n.approval?' checked':''}></label>
+    <button class="btn" type="submit">Grubu kur</button>
+  </form>`;
+}
+function vJoin(){
+  return top(back('home','Geri'),'Gruba katıl','')+
+  `<form id="joinForm" class="stack" novalidate>
+    <label class="f">Davet kodu<input id="jCode" class="num" style="font-size:22px;letter-spacing:.06em;text-transform:uppercase" placeholder="ABCD-EFG-HJK" value="${esc(showCode(S.joinCode))}" autocomplete="off" autocapitalize="characters"></label>
+    <label class="f">Gruptaki adınız<input id="jName" maxlength="40" value="${esc(S.user.name||'')}" autocomplete="name"></label>
+    <button class="btn" type="submit">Katıl</button>
+    <p class="note">Kodu grubu kuran kişiden isteyin. Davet linkiyle geldiyseniz kod hazır yazılıdır.</p>
+  </form>`;
+}
+function vGroup(){
+  if(!S.g)return top(back('home','Gruplar'),'','')+'<div class="spin" role="status" aria-label="Yükleniyor"></div>';
+  const tabs=`<div class="tabs" role="tablist"><button role="tab" aria-selected="${S.tab==='giderler'}" data-act="tabG">Giderler</button><button role="tab" aria-selected="${S.tab==='grup'}" data-act="tabS">Grup${isAdmin()&&S.members.some(m=>m.status==='pending')?' •':''}</button></div>`;
+  return top(back('home','Gruplar'),S.g.name,'')+tabs+(S.tab==='grup'?vSettings():vExpenses());
+}
+function inviteCard(){
+  return `<div class="card soft"><b>Kişileri davet edin</b>
+    <span class="hint">Bu kodu veya linki WhatsApp'tan paylaşın. Gelenler giriş yapıp gruba katılır.</span>
+    <div class="code">${esc(showCode(S.g.code))}</div>
+    <div class="row"><button class="btn quiet" data-act="copyLink">Linki kopyala</button><button class="btn quiet" data-act="copyCode">Kodu kopyala</button></div></div>`;
+}
+function vExpenses(){
+  const list=monthList(),{rows,tr,total}=compute(list),pend=S.members.filter(m=>m.status==='pending').length;
+  return `${isAdmin()&&active().length<2?inviteCard():''}
+  ${isAdmin()&&pend?`<button class="card warn" style="text-align:left;font-size:16px" data-act="tabS"><b>${pend} kişi katılım onayı bekliyor</b><span class="hint">Onaylamak için dokunun.</span></button>`:''}
+  <button class="btn" data-act="toAdd">+ Gider ekle</button>
+  <div class="month"><button class="icon" data-act="prev" aria-label="Önceki ay">‹</button><span>${monthName(S.month)}</span><button class="icon" data-act="next" aria-label="Sonraki ay">›</button></div>
+  <section class="card soft"><h2>Ay sonu kim kime ödeyecek?</h2>
+    ${tr.length?tr.map(t=>`<div class="tr"><span class="w"><b>${esc(t.from)}</b><span class="ar">→</span><b>${esc(t.to)}</b></span><span class="num">${fmt(t.v)}</span></div>`).join('')
+      :`<p class="hint" style="margin:0">${list.length?'Herkes ödeşmiş, para transferi gerekmiyor.':'Bu ay henüz gider girilmedi.'}</p>`}
+  </section>
+  <section class="card"><h2>Kişi bazında <b class="num">${list.length?fmt(total):''}</b></h2>
+    <ul class="list">${rows.map(r=>`<li><span class="t"><b>${esc(r.name)}</b><span class="sub">ödedi ${fmt(r.paid)} · payı ${fmt(r.share)}</span></span><span class="num bal ${r.net>0?'pos':r.net<0?'neg':''}">${sfmt(r.net)}</span></li>`).join('')}</ul>
+    <span class="hint">Artı: alacaklı · Eksi: borçlu</span>
+  </section>
+  <section class="card"><h2>Giderler <b class="num">${list.length||''}</b></h2>
+    ${list.length?`<ul class="list">${list.map(e=>{
+      const can=e.by===S.user.uid||isAdmin(),ps=e.participants||[],all=ps.length===active().length&&active().every(m=>ps.includes(m.id));
+      const d=e.date?e.date.slice(8,10)+'.'+e.date.slice(5,7):'';
+      return `<li><span class="t"><b>${esc(e.desc||'—')}</b><span class="sub">${d} · ${esc(nameOf(e.payer))} ödedi · ${all?'herkes':esc(ps.map(nameOf).join(', '))}</span></span>
+        <span style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="num" style="font-weight:600">${fmt(e.amount)}</span>${can?`<button class="mini" data-del="${esc(e.id)}">Sil</button>`:''}</span></li>`;}).join('')}</ul>`
+      :`<p class="empty" style="margin:0">Bu ay için gider yok. Yukarıdaki düğmeyle ilk gideri ekleyin.</p>`}
+  </section>
+  ${list.length?`<button class="btn quiet" data-act="report">Aylık raporu kopyala</button>`:''}`;
+}
+function vAdd(){
+  const d=S.draft,act=active(),parts=d.parts||act.map(m=>m.id);
+  return top(back('group','Vazgeç'),'Gider ekle','')+
+  `<form id="addForm" class="stack" novalidate>
+    <label class="f">Tutar (₺)<input id="aAmt" class="amt" inputmode="decimal" placeholder="0,00" value="${esc(d.amount)}" autocomplete="off"></label>
+    <label class="f">Ne için?<input id="aDesc" maxlength="120" placeholder="örn. Kırtasiye, çay-kahve, pasta" value="${esc(d.desc)}" autocomplete="off"></label>
+    <div class="stack" style="gap:6px"><span class="hint" style="font-weight:600">Kim ödedi?</span>
+      <div class="chips">${act.map(m=>`<button type="button" class="chip" data-payer="${esc(m.id)}" aria-pressed="${m.id===d.payer}">${esc(m.name)}</button>`).join('')}</div></div>
+    <div class="stack" style="gap:6px"><span class="hint" style="font-weight:600">Kimler arasında bölünecek?</span>
+      <div class="chips">${act.map(m=>`<button type="button" class="chip" data-part="${esc(m.id)}" aria-pressed="${parts.includes(m.id)}">${esc(m.name)}</button>`).join('')}
+        ${act.length>1?`<button type="button" class="chip ghost" data-act="allParts">${parts.length===act.length?'Hiçbiri':'Hepsi'}</button>`:''}</div>
+      <span class="hint" id="aHint"></span></div>
+    <label class="f">Tarih<input id="aDate" type="date" value="${esc(d.date)}"></label>
+    <button class="btn" type="submit">Kaydet</button>
+  </form>`;
+}
+function vSettings(){
+  const adm=isAdmin(),m=me(),ms=S.members.slice().sort((a,b)=>(a.status==='pending'?-1:0)-(b.status==='pending'?-1:0)||cmp(a.name||'',b.name||''));
+  const admins=S.members.filter(x=>x.role==='admin').length;
+  return `${inviteCard()}
+  <section class="card"><h2>Üyeler <b class="num">${active().length}</b></h2>
+    <ul class="list">${ms.map(x=>`<li><span class="t"><b>${esc(x.name)}</b>${x.id===S.user.uid?' <span class="pill mute">siz</span>':''}
+        <span class="sub">${x.status==='pending'?'Katılım onayı bekliyor':x.role==='admin'?'Yönetici':x.guest?'Hesapsız üye (yönetici adına giriyor)':esc(x.email||'Üye')}</span></span>
+        ${adm&&x.status==='pending'?`<button class="mini ok" data-approve="${esc(x.id)}">Onayla</button>`:''}
+        ${adm&&x.id!==S.user.uid?`<button class="mini" data-rm="${esc(x.id)}">${x.status==='pending'?'Reddet':'Çıkar'}</button>`:''}</li>`).join('')}</ul>
+    ${adm?`<form id="guestForm" class="row" novalidate><input id="gGuest" maxlength="40" placeholder="Hesabı olmayan kişiyi ekle" autocomplete="off"><button class="btn quiet" type="submit" style="flex:0 0 auto;width:auto">Ekle</button></form>
+      <span class="hint">Uygulamaya girmeyecek biri (ör. etkinlikte misafir) için. Onun giderlerini siz girersiniz.</span>`:''}
+  </section>
+  ${adm?`<section class="card"><h2>Grup ayarları</h2>
+    <form id="renameG" class="row" novalidate><input id="rgName" maxlength="60" value="${esc(S.g.name)}"><button class="btn quiet" type="submit" style="flex:0 0 auto;width:auto">Kaydet</button></form>
+    <label class="switch"><span>Katılım için yönetici onayı</span><input type="checkbox" id="gApprToggle"${S.g.approval?' checked':''}></label>
+  </section>`:''}
+  ${m?`<section class="card"><h2>Gruptaki adınız</h2>
+    <form id="renameMe" class="row" novalidate><input id="rmName" maxlength="40" value="${esc(m.name)}"><button class="btn quiet" type="submit" style="flex:0 0 auto;width:auto">Kaydet</button></form></section>`:''}
+  ${!(adm&&admins<2)?`<button class="btn danger" data-act="leave">Gruptan ayrıl</button>`:'<p class="note">Yönetici olduğunuz için gruptan ayrılamazsınız.</p>'}`;
+}
+
+function render(){
+  const a=document.activeElement;
+  if(a&&a.tagName==='INPUT'&&app.contains(a)&&a.type!=='checkbox'&&S.view!=='loading'&&!render.force){deferred=true;return;}
+  render.force=false;deferred=false;
+  let h='';
+  switch(S.view){
+    case'loading':h='<div class="spin" role="status" aria-label="Yükleniyor"></div>';break;
+    case'error':h=`<div class="hero"><div class="logo">₺</div><h1>Mahsup</h1><p>${esc(S.err)}</p></div><button class="btn" data-act="reload">Yeniden dene</button>`;break;
+    case'login':h=vLogin();break;case'home':h=vHome();break;case'create':h=vCreate();break;
+    case'join':h=vJoin();break;case'group':h=vGroup();break;case'add':h=vAdd();break;
+  }
+  app.innerHTML=h;
+  if(S.view==='add')updHint();
+}
+const rr=()=>{render.force=true;render();};
+const go=v=>{S.view=v;render.force=true;render();window.scrollTo(0,0);};
+app.addEventListener('focusout',()=>setTimeout(()=>{if(deferred&&!(document.activeElement&&document.activeElement.tagName==='INPUT'&&app.contains(document.activeElement)))render();},0));
+
+function updHint(){
+  const h=$('#aHint');if(!h)return;const n=(S.draft.parts||active().map(m=>m.id)).length,a=parseAmount(S.draft.amount);
+  h.textContent=n?n+' kişi'+(a>0?' · kişi başı yaklaşık '+fmt(Math.floor(a/n)):''):'En az bir kişi seçin.';
+}
+
+/* ================= Akış ================= */
+function closeGroup(){if(unG){unG();unG=null;}S.gid=null;S.g=null;S.members=[];S.expenses=[];}
+function openGroup(gid){
+  closeGroup();S.gid=gid;S.tab='giderler';S.month=today().slice(0,7);go('group');
+  unG=B.watchGroup(gid,st=>{
+    if(S.gid!==gid)return;
+    if(!st.group&&!B.demo&&st.members.length===0)return;
+    S.g=st.group;S.members=st.members;S.expenses=st.expenses;
+    if(S.user&&S.g&&!S.members.some(m=>m.id===S.user.uid&&m.status==='active')&&S.members.length){toast('Bu gruptan çıkarıldınız.');closeGroup();return go('home');}
+    if(S.view==='group'||S.view==='add')render();
+  },()=>{toast('Bu gruba erişiminiz yok.');closeGroup();go('home');});
+}
+function startDraft(){
+  const act=active(),mine=act.some(m=>m.id===S.user.uid);
+  const t=today();
+  S.draft={amount:'',desc:'',payer:mine?S.user.uid:(act[0]&&act[0].id),parts:null,date:t.slice(0,7)===S.month?t:S.month+'-01'};
+}
+async function afterJoin(r){
+  S.joinCode='';try{history.replaceState(null,'',location.pathname)}catch(e){}
+  if(r.status==='pending'){toast('Katılım isteğiniz yöneticiye iletildi. Onaylanınca grup açılacak.');go('home');}
+  else openGroup(r.gid);
+}
+
+app.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act],[data-open],[data-type],[data-payer],[data-part],[data-del],[data-approve],[data-rm]');if(!t)return;
+  const d=t.dataset;
+  if(d.open){const g=S.groups.find(x=>x.id===d.open);if(g&&g.status==='pending')return toast('Yönetici onayı bekleniyor. Onaylanınca grup açılacak.');return openGroup(d.open);}
+  if(d.type){S.newG.type=d.type;return rr();}
+  if(d.payer){S.draft.payer=d.payer;return rr();}
+  if(d.part){const all=active().map(m=>m.id);let p=(S.draft.parts||all).slice();p=p.includes(d.part)?p.filter(x=>x!==d.part):p.concat(d.part);S.draft.parts=p;return rr();}
+  if(d.del)return armed(t,'Silinsin mi?',()=>B.delExpense(S.gid,d.del).then(()=>toast('Gider silindi.')));
+  if(d.approve)return B.updateMember(S.gid,d.approve,{status:'active'}).then(()=>toast('Üye onaylandı.')).catch(fail);
+  if(d.rm)return armed(t,'Emin misiniz?',()=>B.removeMember(S.gid,d.rm).then(()=>toast('Üye gruptan çıkarıldı. Eski giderleri korunur.')));
+  switch(d.act){
+    case'reload':return location.reload();
+    case'google':return B.google().catch(fail);
+    case'reset':{const em=($('#em')||{}).value;if(!em)return toast('Önce e-posta adresinizi yazın.');
+      return B.reset(em.trim()).then(()=>toast('Şifre sıfırlama bağlantısı e-postanıza gönderildi.')).catch(fail);}
+    case'logout':return B.signOut();
+    case'home':closeGroup();return go('home');
+    case'group':return go('group');
+    case'toCreate':S.newG={name:'',type:'ofis',myName:S.user.name||'',approval:false};return go('create');
+    case'toJoin':return go('join');
+    case'tabG':S.tab='giderler';return go('group');
+    case'tabS':S.tab='grup';return go('group');
+    case'toAdd':if(!active().length)return toast('Önce gruba üye ekleyin.');startDraft();return go('add');
+    case'allParts':{const all=active().map(m=>m.id);S.draft.parts=(S.draft.parts||all).length===all.length?[]:null;return rr();}
+    case'prev':case'next':{let[y,m]=S.month.split('-').map(Number);m+=d.act==='next'?1:-1;if(m<1){m=12;y--;}if(m>12){m=1;y++;}S.month=y+'-'+pad(m);return rr();}
+    case'copyLink':return copy(location.origin+location.pathname+'?kod='+S.g.code,'Davet linki kopyalandı.');
+    case'copyCode':return copy(showCode(S.g.code),'Kod kopyalandı.');
+    case'report':return copy(reportText(),'Rapor kopyalandı.');
+    case'leave':return armed(t,'Ayrılmak istediğinize emin misiniz?',async()=>{const g=S.gid;closeGroup();await B.leave(S.user.uid,g);toast('Gruptan ayrıldınız.');go('home');});
+  }
+});
+app.addEventListener('input',e=>{
+  const id=e.target.id;
+  if(S.view==='add'&&S.draft){if(id==='aAmt'){S.draft.amount=e.target.value;updHint();}if(id==='aDesc')S.draft.desc=e.target.value;if(id==='aDate')S.draft.date=e.target.value;}
+  if(S.view==='create'&&S.newG){if(id==='gName')S.newG.name=e.target.value;if(id==='myName')S.newG.myName=e.target.value;if(id==='gAppr')S.newG.approval=e.target.checked;}
+});
+app.addEventListener('change',e=>{
+  if(e.target.id==='gAppr'&&S.newG)S.newG.approval=e.target.checked;
+  if(e.target.id==='gApprToggle')B.updateGroup(S.user.uid,S.gid,S.g.code,{approval:e.target.checked}).then(()=>toast(e.target.checked?'Katılımlar artık onayınızla olacak.':'Kodu bilen herkes doğrudan katılabilir.')).catch(fail);
+});
+app.addEventListener('submit',async e=>{
+  e.preventDefault();const f=e.target.id,btn=e.target.querySelector('[type=submit]');
+  const run=async fn=>{if(btn)btn.disabled=true;try{await fn();}catch(err){fail(err);}if(btn&&btn.isConnected)btn.disabled=false;};
+  if(f==='emailForm'){const em=$('#em').value.trim(),pw=$('#pw').value;
+    if(!em)return toast('E-posta adresinizi yazın.');if(pw.length<6)return toast('Şifre en az 6 karakter olmalı.');
+    return run(()=>B.email(em,pw));}
+  if(f==='createForm'){const n=S.newG;n.name=$('#gName').value.trim();n.myName=$('#myName').value.trim();n.approval=$('#gAppr').checked;
+    if(!n.name)return toast('Grubun adını yazın.');if(!n.myName)return toast('Gruptaki adınızı yazın.');
+    return run(async()=>{const gid=await B.createGroup(S.user,n);toast('Grup kuruldu. Şimdi kişileri davet edin.');openGroup(gid);});}
+  if(f==='joinForm'){const code=normCode($('#jCode').value),nm=$('#jName').value.trim();
+    if(code.length!==10)return toast('Davet kodu 10 karakter olmalı.');if(!nm)return toast('Gruptaki adınızı yazın.');
+    return run(async()=>afterJoin(await B.joinByCode(S.user,code,nm)));}
+  if(f==='addForm'){const d=S.draft,amount=parseAmount($('#aAmt').value),desc=$('#aDesc').value.trim(),date=$('#aDate').value||today();
+    const parts=(d.parts||active().map(m=>m.id)).slice();
+    if(!(amount>0))return toast('Geçerli bir tutar yazın.');if(!desc)return toast('Giderin ne için olduğunu yazın.');
+    if(!d.payer)return toast('Ödeyen kişiyi seçin.');if(!parts.length)return toast('Gideri bölüşecek en az bir kişi seçin.');
+    return run(async()=>{await B.addExpense(S.gid,{payer:d.payer,amount,desc,date,month:date.slice(0,7),participants:parts,by:S.user.uid,createdAt:Date.now()});
+      S.month=date.slice(0,7);S.tab='giderler';S.draft=null;toast('Gider kaydedildi.');go('group');});}
+  if(f==='guestForm'){const n=$('#gGuest').value.trim();if(!n)return;
+    if(S.members.some(m=>(m.name||'').toLocaleLowerCase('tr')===n.toLocaleLowerCase('tr')))return toast('Bu isimde bir üye zaten var.');
+    return run(async()=>{await B.addGuest(S.gid,n);$('#gGuest').value='';toast(n+' eklendi.');});}
+  if(f==='renameG'){const n=$('#rgName').value.trim();if(!n)return;return run(async()=>{await B.updateGroup(S.user.uid,S.gid,S.g.code,{name:n});toast('Grup adı güncellendi.');});}
+  if(f==='renameMe'){const n=$('#rmName').value.trim();if(!n)return;return run(async()=>{await B.updateMember(S.gid,S.user.uid,{name:n});toast('Adınız güncellendi.');});}
+});
+
+function reportText(){
+  const list=monthList(),{rows,tr,total}=compute(list);
+  const L=[S.g.name.toUpperCase()+' — '+monthName(S.month).toUpperCase(),'Toplam gider: '+fmt(total)+' ('+list.length+' kalem)','','KİŞİ BAZINDA'];
+  rows.forEach(r=>L.push(r.name+': ödedi '+fmt(r.paid)+', payı '+fmt(r.share)+', bakiye '+sfmt(r.net)));
+  L.push('','AY SONU ÖDEMELERİ');if(tr.length)tr.forEach(t=>L.push(t.from+' → '+t.to+': '+fmt(t.v)));else L.push('Transfer gerekmiyor.');
+  L.push('','GİDERLER');
+  list.slice().reverse().forEach(e=>L.push((e.date||'').split('-').reverse().slice(0,2).join('.')+' · '+nameOf(e.payer)+' · '+fmt(e.amount)+' · '+e.desc+' ('+(e.participants||[]).map(nameOf).join(', ')+')'));
+  return L.join('\n');
+}
+
+(async function boot(){
+  try{B=window.FIREBASE_CONFIG?await firebaseBackend(window.FIREBASE_CONFIG):localBackend();}
+  catch(e){S.err='Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edip yeniden deneyin.';return go('error');}
+  S.demo=!!B.demo;
+  B.onAuth(u=>{
+    S.user=u;if(unMy){unMy();unMy=null;}closeGroup();
+    if(!u)return go('login');
+    unMy=B.watchMyGroups(u.uid,list=>{S.groups=list;if(S.view==='home')render();});
+    go(S.joinCode?'join':'home');
+  });
+})();
+})();
+</script>
+
+</body>
+</html>
