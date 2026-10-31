@@ -1,0 +1,68 @@
+rules_version = '2';
+// Mahsup — Firestore güvenlik kuralları
+// Firebase Console > Firestore Database > Kurallar (Rules) sekmesine olduğu gibi yapıştırıp Yayınla deyin.
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function groupPath(gid) { return /databases/$(db)/documents/groups/$(gid); }
+    function memberPath(gid) { return /databases/$(db)/documents/groups/$(gid)/members/$(request.auth.uid); }
+    function isMember(gid) {
+      return signedIn() && exists(memberPath(gid)) && get(memberPath(gid)).data.status == 'active';
+    }
+    function isAdmin(gid) { return isMember(gid) && get(memberPath(gid)).data.role == 'admin'; }
+
+    // Kullanıcının kendi grup listesi
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Davet kodları: kodu bilen giriş yapmış kişi okuyabilir, liste alınamaz
+    match /codes/{code} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn() && request.resource.data.adminUid == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.adminUid == request.auth.uid;
+    }
+
+    match /groups/{gid} {
+      allow read: if isMember(gid);
+      allow create: if signedIn() && request.resource.data.adminUid == request.auth.uid;
+      allow update, delete: if isAdmin(gid);
+
+      match /members/{mid} {
+        allow read: if isMember(gid) || (signedIn() && mid == request.auth.uid);
+        allow create: if signedIn() && (
+          // Grubu kuran kişi kendini yönetici olarak ekler (aynı toplu yazımda)
+          (mid == request.auth.uid
+            && request.resource.data.role == 'admin'
+            && getAfter(groupPath(gid)).data.adminUid == request.auth.uid)
+          ||
+          // Kodla katılım: kod doğru olmalı; onay açıksa yalnızca "pending" olarak
+          (mid == request.auth.uid
+            && request.resource.data.role == 'member'
+            && request.resource.data.code == get(groupPath(gid)).data.code
+            && (request.resource.data.status == 'pending'
+                || (request.resource.data.status == 'active' && get(groupPath(gid)).data.approval == false)))
+          ||
+          // Yönetici hesabı olmayan kişi ekler
+          (isAdmin(gid) && request.resource.data.uid == null && request.resource.data.role == 'member')
+        );
+        // Yönetici her şeyi; üye yalnızca kendi adını değiştirebilir
+        allow update: if isAdmin(gid)
+          || (signedIn() && mid == request.auth.uid
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name']));
+        allow delete: if isAdmin(gid) || (signedIn() && mid == request.auth.uid);
+      }
+
+      match /expenses/{eid} {
+        allow read: if isMember(gid);
+        allow create: if isMember(gid)
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.amount is int && request.resource.data.amount > 0;
+        allow update, delete: if isMember(gid)
+          && (resource.data.by == request.auth.uid || isAdmin(gid));
+      }
+    }
+  }
+}
